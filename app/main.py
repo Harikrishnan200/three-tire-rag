@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.api.v1.router import api_router
+from app.api.v1.routes import health
 from app.core.config import get_settings
 from app.core.exceptions import AppError
 from app.observability.logging import configure_logging, get_logger
@@ -67,11 +68,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
     )
 
 
+app.include_router(health.router)
 app.include_router(api_router, prefix="/api/v1")
 
 Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
-
-
-@app.get("/health/live", tags=["health"])
-async def liveness() -> dict[str, str]:
-    return {"status": "ok"}
