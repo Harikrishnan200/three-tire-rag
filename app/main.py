@@ -1,9 +1,17 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from prometheus_fastapi_instrumentator import Instrumentator
 
+from app.api.v1.router import api_router
 from app.core.config import get_settings
+from app.core.exceptions import AppError
+from app.observability.logging import configure_logging, get_logger
+from app.observability.middleware import RequestContextMiddleware
 
 settings = get_settings()
+configure_logging(settings.log_level)
+logger = get_logger(__name__)
 
 app = FastAPI(
     title="Deterministic GraphRAG Knowledge Assistant",
@@ -22,6 +30,32 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(RequestContextMiddleware)
+
+
+@app.exception_handler(AppError)
+async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.warning("app_error", code=exc.code, message=exc.message, request_id=request_id, path=request.url.path)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": {"code": exc.code, "message": exc.message, "request_id": request_id}},
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.error("unhandled_exception", error=str(exc), request_id=request_id, path=request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"error": {"code": "internal_error", "message": "An unexpected error occurred.", "request_id": request_id}},
+    )
+
+
+app.include_router(api_router, prefix="/api/v1")
+
+Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
 
 
 @app.get("/health/live", tags=["health"])
