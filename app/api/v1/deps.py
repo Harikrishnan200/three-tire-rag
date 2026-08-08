@@ -9,7 +9,12 @@ from app.core.config import Settings, get_settings
 from app.core.exceptions import UnauthorizedError
 from app.core.security import decode_access_token
 from app.db.models import User
-from app.db.repositories import ConversationRepository, DocumentRepository, MessageRepository, UserRepository
+from app.db.repositories import (
+    ConversationRepository,
+    DocumentRepository,
+    MessageRepository,
+    UserRepository,
+)
 from app.db.session import get_db
 from app.embeddings.provider import EmbeddingProvider, get_embedding_provider
 from app.graph.container import get_graph_repository as _get_graph_repository
@@ -25,7 +30,9 @@ async def get_user_repository(session: AsyncSession = Depends(get_db)) -> UserRe
     return UserRepository(session)
 
 
-async def get_conversation_repository(session: AsyncSession = Depends(get_db)) -> ConversationRepository:
+async def get_conversation_repository(
+    session: AsyncSession = Depends(get_db),
+) -> ConversationRepository:
     return ConversationRepository(session)
 
 

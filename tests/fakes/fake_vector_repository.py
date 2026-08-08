@@ -13,7 +13,11 @@ class FakeVectorRepository(VectorRepository):
         self._chunks.extend(chunks)
 
     async def search(
-        self, query_embedding: list[float], user_id: str, limit: int = 5, document_id: str | None = None
+        self,
+        query_embedding: list[float],
+        user_id: str,
+        limit: int = 5,
+        document_id: str | None = None,
     ) -> list[VectorSearchResult]:
         candidates = [c for c in self._chunks if c.user_id == user_id]
         if document_id:
@@ -28,7 +32,11 @@ class FakeVectorRepository(VectorRepository):
         ranked = sorted(candidates, key=score, reverse=True)[:limit]
         return [
             VectorSearchResult(
-                text=c.text, score=score(c), document_id=c.document_id, chunk_id=c.point_id, page=c.page
+                text=c.text,
+                score=score(c),
+                document_id=c.document_id,
+                chunk_id=c.point_id,
+                page=c.page,
             )
             for c in ranked
         ]

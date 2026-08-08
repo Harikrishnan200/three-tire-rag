@@ -6,7 +6,9 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_upload_requires_auth(client) -> None:
-    response = await client.post("/api/v1/documents/upload", files={"file": ("a.txt", b"hello", "text/plain")})
+    response = await client.post(
+        "/api/v1/documents/upload", files={"file": ("a.txt", b"hello", "text/plain")}
+    )
     assert response.status_code == 401
 
 

@@ -49,7 +49,14 @@ async def test_temporal_query_returns_historical_fact_for_past_date() -> None:
 async def test_historical_fact_does_not_override_current_fact_in_current_query() -> None:
     repo = NetworkXGraphRepository()
     await repo.add_fact(
-        GraphFact(id="1", subject="Microsoft", predicate="ceo", object="Satya Nadella", priority=100, valid_to=None)
+        GraphFact(
+            id="1",
+            subject="Microsoft",
+            predicate="ceo",
+            object="Satya Nadella",
+            priority=100,
+            valid_to=None,
+        )
     )
     await repo.add_fact(
         GraphFact(

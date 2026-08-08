@@ -36,7 +36,9 @@ class DocumentRepository:
 
     async def get_by_hash(self, user_id: str, content_hash: str) -> Document | None:
         result = await self._session.execute(
-            select(Document).where(Document.user_id == user_id, Document.content_hash == content_hash)
+            select(Document).where(
+                Document.user_id == user_id, Document.content_hash == content_hash
+            )
         )
         return result.scalar_one_or_none()
 
@@ -59,7 +61,12 @@ class DocumentRepository:
             await self._session.commit()
 
     async def add_chunk(
-        self, document_id: str, chunk_index: int, text: str, vector_point_id: str | None, page: int | None = None
+        self,
+        document_id: str,
+        chunk_index: int,
+        text: str,
+        vector_point_id: str | None,
+        page: int | None = None,
     ) -> DocumentChunk:
         chunk = DocumentChunk(
             document_id=document_id,

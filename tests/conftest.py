@@ -8,9 +8,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.api.v1.deps import (
-    get_current_user,
     get_graph_repository,
-    get_rag_service,
     get_vector_repository,
 )
 from app.core.cache import InMemoryResponseCache, get_response_cache
@@ -23,7 +21,6 @@ from app.graph.repository import GraphRepository, NetworkXGraphRepository
 from app.llm.provider import get_llm_provider
 from app.main import app
 from app.rag.entity_extraction import get_entity_extractor
-from app.rag.service import RAGService
 from app.vector.repository import VectorRepository
 from tests.fakes.fake_embeddings import FakeEmbeddingProvider
 from tests.fakes.fake_entity_extractor import FakeEntityExtractor
@@ -88,7 +85,9 @@ async def client(
     app.dependency_overrides.clear()
 
 
-async def register_and_login(client: AsyncClient, email: str, password: str = "testpassword123") -> str:
+async def register_and_login(
+    client: AsyncClient, email: str, password: str = "testpassword123"
+) -> str:
     await client.post("/api/v1/auth/register", json={"email": email, "password": password})
     response = await client.post("/api/v1/auth/login", json={"email": email, "password": password})
     token = response.json()["access_token"]

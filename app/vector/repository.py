@@ -39,7 +39,11 @@ class VectorRepository(ABC):
 
     @abstractmethod
     async def search(
-        self, query_embedding: list[float], user_id: str, limit: int = 5, document_id: str | None = None
+        self,
+        query_embedding: list[float],
+        user_id: str,
+        limit: int = 5,
+        document_id: str | None = None,
     ) -> list[VectorSearchResult]: ...
 
     @abstractmethod
@@ -60,7 +64,9 @@ class QdrantVectorRepository(VectorRepository):
         if self._collection not in collections:
             self._client.create_collection(
                 collection_name=self._collection,
-                vectors_config=qmodels.VectorParams(size=vector_size, distance=qmodels.Distance.COSINE),
+                vectors_config=qmodels.VectorParams(
+                    size=vector_size, distance=qmodels.Distance.COSINE
+                ),
             )
 
     async def upsert_chunks(self, chunks: list[VectorChunk]) -> None:
@@ -81,11 +87,19 @@ class QdrantVectorRepository(VectorRepository):
         self._client.upsert(collection_name=self._collection, points=points)
 
     async def search(
-        self, query_embedding: list[float], user_id: str, limit: int = 5, document_id: str | None = None
+        self,
+        query_embedding: list[float],
+        user_id: str,
+        limit: int = 5,
+        document_id: str | None = None,
     ) -> list[VectorSearchResult]:
         must = [qmodels.FieldCondition(key="user_id", match=qmodels.MatchValue(value=user_id))]
         if document_id:
-            must.append(qmodels.FieldCondition(key="document_id", match=qmodels.MatchValue(value=document_id)))
+            must.append(
+                qmodels.FieldCondition(
+                    key="document_id", match=qmodels.MatchValue(value=document_id)
+                )
+            )
         hits = self._client.search(
             collection_name=self._collection,
             query_vector=query_embedding,
@@ -108,7 +122,11 @@ class QdrantVectorRepository(VectorRepository):
             collection_name=self._collection,
             points_selector=qmodels.FilterSelector(
                 filter=qmodels.Filter(
-                    must=[qmodels.FieldCondition(key="document_id", match=qmodels.MatchValue(value=document_id))]
+                    must=[
+                        qmodels.FieldCondition(
+                            key="document_id", match=qmodels.MatchValue(value=document_id)
+                        )
+                    ]
                 )
             ),
         )
@@ -118,7 +136,11 @@ class QdrantVectorRepository(VectorRepository):
             collection_name=self._collection,
             points_selector=qmodels.FilterSelector(
                 filter=qmodels.Filter(
-                    must=[qmodels.FieldCondition(key="user_id", match=qmodels.MatchValue(value=user_id))]
+                    must=[
+                        qmodels.FieldCondition(
+                            key="user_id", match=qmodels.MatchValue(value=user_id)
+                        )
+                    ]
                 )
             ),
         )

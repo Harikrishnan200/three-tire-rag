@@ -16,11 +16,14 @@ def build_context_block(evidence: list[dict]) -> str:
         if tier in (1, 2):
             validity = ""
             if item.get("valid_from") or item.get("valid_to"):
-                validity = f" [valid {item.get('valid_from') or '?'} to {item.get('valid_to') or 'present'}]"
-            lines.append(
-                f"[{idx}] {label}: {item.get('subject')} {item.get('predicate')} {item.get('object')}"
-                f"{validity} (source: {item.get('source')}, confidence: {item.get('confidence')})"
-            )
+                valid_from = item.get("valid_from") or "?"
+                valid_to = item.get("valid_to") or "present"
+                validity = f" [valid {valid_from} to {valid_to}]"
+            subject, predicate, obj = item.get("subject"), item.get("predicate"), item.get("object")
+            source, confidence = item.get("source"), item.get("confidence")
+            fact_line = f"[{idx}] {label}: {subject} {predicate} {obj}{validity}"
+            lines.append(f"{fact_line} (source: {source}, confidence: {confidence})")
         else:
-            lines.append(f"[{idx}] {label}: {item.get('text', item.get('object', ''))} (source: {item.get('source')})")
+            text, source = item.get("text", item.get("object", "")), item.get("source")
+            lines.append(f"[{idx}] {label}: {text} (source: {source})")
     return "\n".join(lines) if lines else "(no evidence retrieved)"

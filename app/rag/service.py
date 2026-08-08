@@ -55,10 +55,12 @@ class RAGService:
         self._resolver = conflict_resolver or ConflictResolver()
         self._model_name = model_name
 
-    async def answer_question(self, user_id: str, conversation_id: str, question: str) -> dict[str, Any]:
+    async def answer_question(
+        self, user_id: str, conversation_id: str, question: str
+    ) -> dict[str, Any]:
         start = time.perf_counter()
 
-        history = await self._messages.list_for_conversation(conversation_id)
+        await self._messages.list_for_conversation(conversation_id)  # loaded for future rewrite use
         standalone_question = question  # single-turn rewrite kept simple/deterministic
 
         at = _extract_query_time(standalone_question)
@@ -112,7 +114,9 @@ class RAGService:
         resolved = self._resolver.resolve(all_evidence)
 
         context_block = build_context_block(resolved.facts)
-        user_prompt = GENERATION_USER_PROMPT_TEMPLATE.format(context=context_block, question=standalone_question)
+        user_prompt = GENERATION_USER_PROMPT_TEMPLATE.format(
+            context=context_block, question=standalone_question
+        )
 
         answer = await self._llm.generate(SYSTEM_PROMPT, user_prompt)
 
@@ -147,7 +151,11 @@ class RAGService:
             "answer": answer,
             "conversation_id": conversation_id,
             "citations": citations,
-            "retrieval": {"tier_1": tier1_evidence, "tier_2": tier2_evidence, "tier_3": tier3_evidence},
+            "retrieval": {
+                "tier_1": tier1_evidence,
+                "tier_2": tier2_evidence,
+                "tier_3": tier3_evidence,
+            },
             "metadata": {"latency_ms": latency_ms, "model": self._model_name},
             "conflicts": resolved.conflicts,
             "injection_flags": injection_flags,

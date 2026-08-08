@@ -20,6 +20,8 @@ class ConversationRepository:
 
     async def list_for_user(self, user_id: str) -> list[Conversation]:
         result = await self._session.execute(
-            select(Conversation).where(Conversation.user_id == user_id).order_by(Conversation.updated_at.desc())
+            select(Conversation)
+            .where(Conversation.user_id == user_id)
+            .order_by(Conversation.updated_at.desc())
         )
         return list(result.scalars().all())

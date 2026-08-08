@@ -26,14 +26,19 @@ async def upload_document(
 ) -> DocumentUploadResponse:
     content = await file.read()
     safe_name = validate_upload(
-        file.filename or "upload", file.content_type or "application/octet-stream", len(content), settings.max_upload_size_mb
+        file.filename or "upload",
+        file.content_type or "application/octet-stream",
+        len(content),
+        settings.max_upload_size_mb,
     )
 
     file_hash = content_hash(content)
     existing = await document_repository.get_by_hash(current_user.id, file_hash)
     if existing is not None:
         job = await document_repository.get_latest_job_for_document(existing.id)
-        return DocumentUploadResponse(document_id=existing.id, job_id=job.id if job else "", status=existing.status)
+        return DocumentUploadResponse(
+            document_id=existing.id, job_id=job.id if job else "", status=existing.status
+        )
 
     os.makedirs(settings.upload_dir, exist_ok=True)
     storage_path = os.path.join(settings.upload_dir, f"{uuid.uuid4()}_{safe_name}")
@@ -52,7 +57,9 @@ async def upload_document(
 
     from app.workers.tasks import process_document_task
 
-    process_document_task.delay(document.id, job.id, current_user.id, storage_path, document.content_type)
+    process_document_task.delay(
+        document.id, job.id, current_user.id, storage_path, document.content_type
+    )
 
     return DocumentUploadResponse(document_id=document.id, job_id=job.id, status="PENDING")
 
@@ -105,4 +112,6 @@ async def get_document_status(
 ) -> DocumentStatusResponse:
     document = await _get_owned_document(document_id, current_user, document_repository)
     job = await document_repository.get_latest_job_for_document(document_id)
-    return DocumentStatusResponse(document_id=document.id, status=document.status, error=job.error if job else None)
+    return DocumentStatusResponse(
+        document_id=document.id, status=document.status, error=job.error if job else None
+    )

@@ -7,7 +7,7 @@ can be unit-tested without Celery/Postgres/Qdrant running.
 from __future__ import annotations
 
 import hashlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.core.exceptions import IngestionError
 from app.db.repositories.document_repository import DocumentRepository
@@ -38,7 +38,9 @@ class IngestionService:
         self._embeddings = embedding_provider
         self._extractor = entity_extractor
 
-    async def process_document(self, document_id: str, job_id: str, user_id: str, content: bytes, content_type: str) -> None:
+    async def process_document(
+        self, document_id: str, job_id: str, user_id: str, content: bytes, content_type: str
+    ) -> None:
         try:
             await self._documents.update_status(document_id, "PROCESSING")
             await self._documents.update_job_status(job_id, "PROCESSING")
@@ -66,7 +68,7 @@ class IngestionService:
 
             entities = self._extractor.extract_entities(text)
             relationships = self._extractor.extract_relationships(text)
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             for rel in relationships:
                 await self._graph.add_fact(
                     GraphFact(

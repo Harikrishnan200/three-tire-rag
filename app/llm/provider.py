@@ -12,7 +12,9 @@ from app.core.exceptions import LLMError
 
 class LLMProvider(ABC):
     @abstractmethod
-    async def generate(self, system_prompt: str, user_prompt: str, temperature: float = 0.1) -> str: ...
+    async def generate(
+        self, system_prompt: str, user_prompt: str, temperature: float = 0.1
+    ) -> str: ...
 
     @abstractmethod
     async def generate_structured(
@@ -80,5 +82,7 @@ class GroqProvider(LLMProvider):
 def get_llm_provider() -> LLMProvider:
     settings = get_settings()
     return GroqProvider(
-        api_key=settings.groq_api_key, model=settings.llm_model, timeout_seconds=settings.llm_timeout_seconds
+        api_key=settings.groq_api_key,
+        model=settings.llm_model,
+        timeout_seconds=settings.llm_timeout_seconds,
     )

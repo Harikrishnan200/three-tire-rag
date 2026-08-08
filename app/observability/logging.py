@@ -6,7 +6,15 @@ import logging
 
 import structlog
 
-_REDACT_KEYS = {"password", "hashed_password", "authorization", "jwt", "token", "api_key", "groq_api_key"}
+_REDACT_KEYS = {
+    "password",
+    "hashed_password",
+    "authorization",
+    "jwt",
+    "token",
+    "api_key",
+    "groq_api_key",
+}
 
 
 def _redact_processor(_, __, event_dict: dict) -> dict:

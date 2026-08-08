@@ -36,7 +36,13 @@ app.add_middleware(RequestContextMiddleware)
 @app.exception_handler(AppError)
 async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
     request_id = getattr(request.state, "request_id", "unknown")
-    logger.warning("app_error", code=exc.code, message=exc.message, request_id=request_id, path=request.url.path)
+    logger.warning(
+        "app_error",
+        code=exc.code,
+        message=exc.message,
+        request_id=request_id,
+        path=request.url.path,
+    )
     return JSONResponse(
         status_code=exc.status_code,
         content={"error": {"code": exc.code, "message": exc.message, "request_id": request_id}},
@@ -46,10 +52,18 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     request_id = getattr(request.state, "request_id", "unknown")
-    logger.error("unhandled_exception", error=str(exc), request_id=request_id, path=request.url.path)
+    logger.error(
+        "unhandled_exception", error=str(exc), request_id=request_id, path=request.url.path
+    )
     return JSONResponse(
         status_code=500,
-        content={"error": {"code": "internal_error", "message": "An unexpected error occurred.", "request_id": request_id}},
+        content={
+            "error": {
+                "code": "internal_error",
+                "message": "An unexpected error occurred.",
+                "request_id": request_id,
+            }
+        },
     )
 
 

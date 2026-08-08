@@ -30,7 +30,9 @@ class MessageRepository:
 
     async def list_for_conversation(self, conversation_id: str) -> list[Message]:
         result = await self._session.execute(
-            select(Message).where(Message.conversation_id == conversation_id).order_by(Message.created_at.asc())
+            select(Message)
+            .where(Message.conversation_id == conversation_id)
+            .order_by(Message.created_at.asc())
         )
         return list(result.scalars().all())
 

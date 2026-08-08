@@ -8,4 +8,6 @@ RAG_GRAPH_SEARCH_LATENCY = Histogram("rag_graph_search_latency_seconds", "Graph 
 CACHE_HITS = Counter("rag_cache_hits_total", "Cache hits for chat responses")
 CACHE_MISSES = Counter("rag_cache_misses_total", "Cache misses for chat responses")
 DOCUMENT_INGESTION_TOTAL = Counter("document_ingestion_total", "Total document ingestion attempts")
-DOCUMENT_INGESTION_FAILURES = Counter("document_ingestion_failures_total", "Total failed document ingestions")
+DOCUMENT_INGESTION_FAILURES = Counter(
+    "document_ingestion_failures_total", "Total failed document ingestions"
+)

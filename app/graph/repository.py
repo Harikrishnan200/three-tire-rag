@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import uuid
 from abc import ABC, abstractmethod
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import networkx as nx
 
@@ -21,7 +21,9 @@ class GraphRepository(ABC):
     async def add_fact(self, fact: GraphFact) -> GraphFact: ...
 
     @abstractmethod
-    async def get_facts_for_entity(self, entity: str, at: datetime | None = None) -> list[GraphFact]: ...
+    async def get_facts_for_entity(
+        self, entity: str, at: datetime | None = None
+    ) -> list[GraphFact]: ...
 
     @abstractmethod
     async def find_relationship(
@@ -35,7 +37,9 @@ class GraphRepository(ABC):
     async def search_entities(self, query: str) -> list[str]: ...
 
     @abstractmethod
-    async def search_relationships(self, query: str, at: datetime | None = None) -> list[GraphFact]: ...
+    async def search_relationships(
+        self, query: str, at: datetime | None = None
+    ) -> list[GraphFact]: ...
 
     @abstractmethod
     async def get_subgraph(self, entity: str, depth: int = 1) -> list[GraphFact]: ...
@@ -67,7 +71,9 @@ class NetworkXGraphRepository(GraphRepository):
         self._graph.add_edge(_norm(fact.subject), _norm(fact.object), key=fact.id, fact_id=fact.id)
         return fact
 
-    async def get_facts_for_entity(self, entity: str, at: datetime | None = None) -> list[GraphFact]:
+    async def get_facts_for_entity(
+        self, entity: str, at: datetime | None = None
+    ) -> list[GraphFact]:
         key = _norm(entity)
         results = [
             f
@@ -76,7 +82,9 @@ class NetworkXGraphRepository(GraphRepository):
         ]
         return results
 
-    async def find_relationship(self, subject: str, predicate: str, at: datetime | None = None) -> list[GraphFact]:
+    async def find_relationship(
+        self, subject: str, predicate: str, at: datetime | None = None
+    ) -> list[GraphFact]:
         s, p = _norm(subject), _norm(predicate)
         return [
             f
@@ -93,14 +101,19 @@ class NetworkXGraphRepository(GraphRepository):
 
     async def search_entities(self, query: str) -> list[str]:
         q = _norm(query)
-        return [data.get("label", n) for n, data in self._graph.nodes(data=True) if q in _norm(data.get("label", n))]
+        return [
+            data.get("label", n)
+            for n, data in self._graph.nodes(data=True)
+            if q in _norm(data.get("label", n))
+        ]
 
     async def search_relationships(self, query: str, at: datetime | None = None) -> list[GraphFact]:
         q = _norm(query)
         return [
             f
             for f in self._facts.values()
-            if (q in _norm(f.subject) or q in _norm(f.predicate) or q in _norm(f.object)) and f.is_valid_at(at)
+            if (q in _norm(f.subject) or q in _norm(f.predicate) or q in _norm(f.object))
+            and f.is_valid_at(at)
         ]
 
     async def get_subgraph(self, entity: str, depth: int = 1) -> list[GraphFact]:
@@ -112,20 +125,28 @@ class NetworkXGraphRepository(GraphRepository):
         for _ in range(depth):
             next_frontier: set[str] = set()
             for node in frontier:
-                next_frontier |= set(self._graph.successors(node)) | set(self._graph.predecessors(node))
+                next_frontier |= set(self._graph.successors(node)) | set(
+                    self._graph.predecessors(node)
+                )
             frontier = next_frontier - visited
             visited |= next_frontier
-        return [f for f in self._facts.values() if _norm(f.subject) in visited or _norm(f.object) in visited]
+        return [
+            f
+            for f in self._facts.values()
+            if _norm(f.subject) in visited or _norm(f.object) in visited
+        ]
 
     async def delete_fact(self, fact_id: str) -> None:
         fact = self._facts.pop(fact_id, None)
-        if fact is not None and self._graph.has_edge(_norm(fact.subject), _norm(fact.object), key=fact_id):
+        if fact is not None and self._graph.has_edge(
+            _norm(fact.subject), _norm(fact.object), key=fact_id
+        ):
             self._graph.remove_edge(_norm(fact.subject), _norm(fact.object), key=fact_id)
 
     async def update_fact(self, fact_id: str, **updates: object) -> GraphFact | None:
         fact = self._facts.get(fact_id)
         if fact is None:
             return None
-        updated = fact.model_copy(update={**updates, "updated_at": datetime.now(timezone.utc)})
+        updated = fact.model_copy(update={**updates, "updated_at": datetime.now(UTC)})
         self._facts[fact_id] = updated
         return updated

@@ -21,7 +21,11 @@ class FakeEntityExtractor(EntityExtractor):
         ]
 
     def extract_entities(self, text: str) -> list[ExtractedEntity]:
-        found = [ExtractedEntity(text=name, label="ORG_OR_PERSON") for name in self._vocabulary if name.lower() in text.lower()]
+        found = [
+            ExtractedEntity(text=name, label="ORG_OR_PERSON")
+            for name in self._vocabulary
+            if name.lower() in text.lower()
+        ]
         return found
 
     def extract_relationships(self, text: str) -> list[ExtractedRelationship]:

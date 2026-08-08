@@ -32,7 +32,9 @@ async def test_ingestion_marks_document_failed_on_unsupported_content(db_session
     )
 
     with pytest.raises(IngestionError):
-        await service.process_document(document.id, job.id, "u1", b"junk", "application/octet-stream")
+        await service.process_document(
+            document.id, job.id, "u1", b"junk", "application/octet-stream"
+        )
 
     refreshed = await document_repository.get_by_id(document.id)
     refreshed_job = await document_repository.get_ingestion_job(job.id)

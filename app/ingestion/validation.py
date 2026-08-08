@@ -27,5 +27,7 @@ def validate_upload(filename: str, content_type: str, size_bytes: int, max_size_
         raise ValidationAppError(f"Unsupported file type: {content_type}. Allowed: PDF, TXT, DOCX.")
     max_bytes = max_size_mb * 1024 * 1024
     if size_bytes > max_bytes:
-        raise ValidationAppError(f"File too large: {size_bytes} bytes exceeds {max_size_mb}MB limit.")
+        raise ValidationAppError(
+            f"File too large: {size_bytes} bytes exceeds {max_size_mb}MB limit."
+        )
     return sanitize_filename(filename)

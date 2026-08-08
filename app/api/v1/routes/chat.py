@@ -52,7 +52,9 @@ async def chat(
     rate_limiter: RateLimiter = Depends(get_rate_limiter),
 ) -> ChatResponse:
     await _check_rate_limit(current_user.id, rate_limiter)
-    conversation_id = await _ensure_conversation(payload.conversation_id, current_user.id, conversation_repository)
+    conversation_id = await _ensure_conversation(
+        payload.conversation_id, current_user.id, conversation_repository
+    )
 
     key = cache_key(current_user.id, f"{conversation_id}:{payload.message}")
     cached = await cache.get(key)
@@ -82,15 +84,24 @@ async def chat_stream(
     rate_limiter: RateLimiter = Depends(get_rate_limiter),
 ) -> StreamingResponse:
     await _check_rate_limit(current_user.id, rate_limiter)
-    conversation_id = await _ensure_conversation(payload.conversation_id, current_user.id, conversation_repository)
+    conversation_id = await _ensure_conversation(
+        payload.conversation_id, current_user.id, conversation_repository
+    )
 
     async def event_generator():
-        result = await rag_service.answer_question(current_user.id, conversation_id, payload.message)
+        result = await rag_service.answer_question(
+            current_user.id, conversation_id, payload.message
+        )
         answer = result["answer"]
         # Stream the already-generated answer in word chunks (SSE). The LLM
         # call itself is not token-streamed here to keep provider abstraction simple.
         for word in answer.split(" "):
             yield f"data: {json.dumps({'token': word + ' '})}\n\n"
-        yield f"data: {json.dumps({'done': True, 'citations': result['citations'], 'metadata': result['metadata']})}\n\n"
+        final_payload = {
+            "done": True,
+            "citations": result["citations"],
+            "metadata": result["metadata"],
+        }
+        yield f"data: {json.dumps(final_payload)}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")

@@ -4,18 +4,26 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_register_and_login(client) -> None:
-    response = await client.post("/api/v1/auth/register", json={"email": "a@example.com", "password": "password123"})
+    response = await client.post(
+        "/api/v1/auth/register", json={"email": "a@example.com", "password": "password123"}
+    )
     assert response.status_code == 201
     assert "access_token" in response.json()
 
-    response = await client.post("/api/v1/auth/login", json={"email": "a@example.com", "password": "password123"})
+    response = await client.post(
+        "/api/v1/auth/login", json={"email": "a@example.com", "password": "password123"}
+    )
     assert response.status_code == 200
     assert "access_token" in response.json()
 
 
 async def test_login_wrong_password_fails(client) -> None:
-    await client.post("/api/v1/auth/register", json={"email": "b@example.com", "password": "password123"})
-    response = await client.post("/api/v1/auth/login", json={"email": "b@example.com", "password": "wrong"})
+    await client.post(
+        "/api/v1/auth/register", json={"email": "b@example.com", "password": "password123"}
+    )
+    response = await client.post(
+        "/api/v1/auth/login", json={"email": "b@example.com", "password": "wrong"}
+    )
     assert response.status_code == 400
 
 

@@ -34,7 +34,10 @@ class ConflictResolver:
     def resolve(self, evidence: list[dict[str, Any]]) -> ResolvedEvidence:
         groups: dict[tuple[str, str], list[dict[str, Any]]] = {}
         for item in evidence:
-            key = (str(item.get("subject", "")).strip().lower(), str(item.get("predicate", "")).strip().lower())
+            key = (
+                str(item.get("subject", "")).strip().lower(),
+                str(item.get("predicate", "")).strip().lower(),
+            )
             groups.setdefault(key, []).append(item)
 
         resolved: list[dict[str, Any]] = []
@@ -97,6 +100,9 @@ class ConflictResolver:
     def _reason(best: dict[str, Any], losers: list[dict[str, Any]]) -> str:
         if any(int(loss.get("priority", 0)) != int(best.get("priority", 0)) for loss in losers):
             return "higher_priority"
-        if any(float(loss.get("confidence", 0.0)) != float(best.get("confidence", 0.0)) for loss in losers):
+        if any(
+            float(loss.get("confidence", 0.0)) != float(best.get("confidence", 0.0))
+            for loss in losers
+        ):
             return "higher_confidence"
         return "newer_valid_info"
