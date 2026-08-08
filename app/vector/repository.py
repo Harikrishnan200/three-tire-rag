@@ -100,9 +100,9 @@ class QdrantVectorRepository(VectorRepository):
                     key="document_id", match=qmodels.MatchValue(value=document_id)
                 )
             )
-        hits = self._client.search(
+        result = self._client.query_points(
             collection_name=self._collection,
-            query_vector=query_embedding,
+            query=query_embedding,
             query_filter=qmodels.Filter(must=must),
             limit=limit,
         )
@@ -114,7 +114,7 @@ class QdrantVectorRepository(VectorRepository):
                 chunk_id=str(h.id),
                 page=h.payload.get("page"),
             )
-            for h in hits
+            for h in result.points
         ]
 
     async def delete_document(self, document_id: str) -> None:

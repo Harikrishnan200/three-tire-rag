@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -14,6 +16,17 @@ settings = get_settings()
 configure_logging(settings.log_level)
 logger = get_logger(__name__)
 
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    if settings.seed_on_startup:
+        from scripts.seed_data import seed
+
+        await seed()
+        logger.info("demo_seed_complete")
+    yield
+
+
 app = FastAPI(
     title="Deterministic GraphRAG Knowledge Assistant",
     description=(
@@ -22,6 +35,7 @@ app = FastAPI(
         "vector document search)."
     ),
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(

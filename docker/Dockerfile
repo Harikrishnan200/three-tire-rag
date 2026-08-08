@@ -14,6 +14,7 @@ COPY pyproject.toml ./
 COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini ./
+COPY scripts ./scripts
 
 RUN pip install --upgrade pip \
     && pip install torch --index-url https://download.pytorch.org/whl/cpu \

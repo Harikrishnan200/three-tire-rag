@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     # CORS
     cors_origins: list[str] = ["http://localhost:3000"]
 
+    # Demo/dev convenience: seed the in-memory graph store on startup.
+    seed_on_startup: bool = False
+
 
 @lru_cache
 def get_settings() -> Settings:
